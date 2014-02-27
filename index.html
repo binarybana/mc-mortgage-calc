@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="favicon.png">
+
+    <title>Monte Carlo Mortgage Calculator</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/navbar-static-top.css" rel="stylesheet">
+
+    <!-- Just for debugging purposes. Don't actually copy this line! -->
+    <!--[if lt IE 9]><script src="../../docs-assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <!-- Static navbar -->
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">Monte Carlo Mortgage Calculator</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#introduction">Introduction</a></li>
+            <li><a href="#example">Example</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+
+    <div class="container">
+
+      <!-- Main component for a primary marketing message or call to action -->
+      <div class="jumbotron">
+        <h1>Welcome to the Monte Carlo Mortgage Calculator</h1>
+        <!--<h1>A Monte Carlo Mortgage Calculator</h1>-->
+        <p>If you want to learn what Monte Carlo analysis is or even just want to run some numbers on a mortgage you've come to the right place. First I introduce the Monte Carlo method and why it is useful with a short pasta (mmm...) example.</p>
+        <p>To skip to the calculator directly just click below, otherwise continue.</p>
+        <p>
+          <a class="btn btn-lg btn-primary" href="calculator" role="button">Skip straight to the calculator&raquo;</a>
+        </p>
+      </div>
+
+    <a name="introduction" class="rellink">&nbsp;</a>
+    <h2>Introduction</h2>
+    <p>Often, we are interested in predicting some quantity in the future, but
+    due to our imperfect knowledge of all the interacting elements, we have to
+    deal with uncertainty. For example, say we are planning a party and are
+    inviting over some friends. We plan on serving a delicious spaghetti
+    dinner, but we are immediately faced with a dilemma: how much spaghetti
+    should we make for our friends? </p>
+
+    <p> One way to tackle the problem is to make a blind guess, but the thought
+    of wasting spaghetti, or not having enough, really grates us the wrong way.
+    So we decide to take a more principled approach by breaking the problem
+    down further in the hopes of simplifying it. One way to do this is to split
+    the problem into estimating how many people are going to show up, and how
+    much spaghetti the average guest will eat. Then we can multiply these
+    numbers together to get an estimate for how much spaghetti they'll eat. In
+    this classic 'divide-and-conquer' approach to problem solving, the idea is
+    that the estimation of these simpler quantities is easier and something we
+    can do more accurately than estimating the final number itself. But we can
+    do one step better... </p>
+
+    <p> Instead of choosing a single number for each of these two quantities,
+    we can instead embrace our uncertainty of these guesses and guess a
+    probability distribution to describe each. For example, we might guess an
+    expected amount of spaghetti that our average friend eats, but also realize
+    that a few of our friends eat a great deal more, and some eat a lot less.
+    We can quantify this uncertainty by answering questions such as: "I'm 90% sure that
+    each of my friends will eat less than X cups of spaghetti." </p>
+
+    <p> Once we've done this for the amount of spaghetti each person eats, and
+    the amount of friends that we think could come over, we can then
+    effectively multiply these probability distributions together to obtain an
+    estimated distribution of spaghetti that might get eaten at our party. In
+    general this is difficult or even impossible to do using analytical (pencil
+    and paper) methods, but using a computer, we can approximate the answer by
+    'simulating' thousands of parties and recording how much spaghhetti is
+    eaten in each. </p>
+
+    <p> But enough jibber jabber, let's begin! First use the slider below to
+    pick how popular you are... I mean... how many friends you expect to come
+    over to the party. Then use the second slider to pick how hungry your
+    friends are. As you change these two values, you can see the resulting
+    amount of spaghetti update in the third graph. Pretty neat huh? </p>
+    
+    <div id="guest_count" class="plot" data-type="poisson"></div>
+    <div id="spaghetti_per" class="plot" data-type="gaussian"></div>
+    <div id="spaghetti_total" class="plot" data-type="output"></div>
+
+    <!--<div id="plotcontainer" class="plot"></div>-->
+    <!--<p>Mean: <span id="meanspan"></span>-->
+      <!--<input id="myslider" type="range" min="1" max="10" step="0.2" style="width:600px">-->
+    <!--</p>-->
+
+    <!--<a name="example" class="rellink">&nbsp;</a>-->
+
+    </div> <!-- /container -->
+
+    <script type="text/template" id="plot_template">
+      <p><%= label %>: <span id='<%= value_id %>'></span>
+      <input id='<%= input_id %>' type='range' min='<%= minimum %>' max='<%= maximum %>' step='<%= step %>' style='width:600px'>
+      </p>
+    </script>
+
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.flot.min.js"></script>
+    <script src="js/jstat.min.js"></script>
+    <script src="js/underscore-min.js"></script>
+    <script src="js/monte.js"></script>
+  </body>
+</html>
