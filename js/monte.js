@@ -1,73 +1,125 @@
 $(function () {
-  function getrand(mu) {
-  }
-
-  //var plot_template = _.template("<p><%= label %>: <span id='<%= value_id %>'></span><input id='<%= input_id %>' type='range' min='<%= minimum %>' max='<% maximum %>' step='<%= step %>' style='width:600px'></p>");
 
   var plot_template = _.template($("#plot_template").html());
 
-  // For each .plot div: setup the plot then:
-  // if .input: 
-  //    add slider depending on dataset.plottype
-  //    init plot depending on dataset.plottype, 
-  //    connect events for slider to input
-  // if .output:
-  //    pass
-  
-  $(".plot").each(function(i) {
-    var type = this.dataset.type;
-    var id = this.id;
-    //if (type == "poisson") {
-      var details = { label:"Rate",
+  function inputObject(plotel, id, mediator) {
+    this.type = "input";
+    this.mediator = mediator;
+    this.details = { label:"Rate",
         value_id:id+"_value",
         input_id:id+"_input",
         minimum:0,
         maximum:20,
         step:1};
+    this.update = function() {
+      console.log('updating...');
+      this.plot.setData([this.gen(this.params.rate)]);
+      this.plot.draw();
+      this.mediator.update();
+    };
 
-      var gen = function(rate) {
+    this.gen = function(rate) {
         data = [];
-        var x = details.minimum;
-        for (i = 0; i < Math.round((details.maximum - details.minimum)/details.step); i++) {
+        var x = this.details.minimum;
+        for (i = 0; i < Math.round((this.details.maximum - this.details.minimum)/this.details.step); i++) {
           data.push([x, jStat.poisson.pdf(x, rate)]);
-          x += details.step;
+          x += this.details.step;
         }
         return data;
       };
 
-      var plot = $.plot(this, [gen(details.minimum)], 
-        {'series': 
-          { 'lines':{'show':false}, 
-            'points':{'show':true, 'radius':7},
-            'bars':{'show':false}}
-        }); 
+    this.params = {rate:0};
+    this.id = id;
 
+    this.plot = $.plot(plotel, [this.gen(this.details.minimum)], 
+      {'series': 
+        { 'lines':{'show':false}, 
+          'points':{'show':true, 'radius':7},
+          'bars':{'show':false}}
+      }); 
 
-      $(this).after(plot_template(details));
-      bind_slider(details.input_id, details.value_id, gen);
-
-    //} else if (type == "gaussian") {
-      //$(this).after(plot_template(...));
-      //bind_slider(...)
-      //$(this).after(plot_template(...));
-      //bind_slider(...)
-    //}
+    var that = this;
+    $(plotel).after(plot_template(this.details));
+    $("#"+this.details.input_id).change(function (e) {
+      $("#"+that.details.value_id).html(e.target.value);
+      that.params.rate = parseFloat(e.target.value);
+      that.update();
+    });
 
     var yaxislabel = $("<div class='axisLabel yaxisLabel'></div>")
       .text("Probability")
-      .appendTo($(this));
-
+      .appendTo($(plotel));
     yaxislabel.css("margin-top", yaxislabel.width() / 2 );
+    //$("#"+this.details.slider_id).trigger("change");
+    //this.update();
+  }
 
-    function bind_slider(slider_id, value_id, gen) {
-      $("#"+slider_id).change(function (e) {
-        //console.log(e)
-        plot.setData([gen(e.target.value)]);
-        //plot.setupGrid();
-        plot.draw();
-        $("#"+value_id).html(parseFloat(e.target.value).toFixed(1))
-        });
-      $("#"+slider_id).trigger("change");
+  function outputObject(plotel, id) {
+    this.type = "output";
+    this.id = id;
+    this.clear = function () {
+      this.plot.setData([]);
+      this.plot.draw();
+    };
+
+    this.update = function (data) {
+      this.plot.setData([data]);
+      this.plot.setupGrid();
+      this.plot.draw();
+    };
+
+    this.plot = $.plot(plotel, [[0,0],[1,1],[2,2]], 
+      {'series': 
+        { 'lines':{'show':false}, 
+          'points':{'show':true, 'radius':7},
+          'bars':{'show':false}}
+      }); 
+
+    var yaxislabel = $("<div class='axisLabel yaxisLabel'></div>")
+      .text("Probability")
+      .appendTo($(plotel));
+    yaxislabel.css("margin-top", yaxislabel.width() / 2 );
+  }
+
+  function Mediator() {
+    this.inplots = [];
+    this.outplot = null;
+    this.register = function(plot) {
+      if (plot.type == "input") {
+        this.inplots.push(plot);
+      }
+      else {
+        this.outplot = plot;
+      }
+    };
+
+    var that = this;
+    this.worker = new Worker("js/mcmc_spaghetti.js");
+    this.worker.addEventListener("message", function (e) {
+      that.outplot.update(e.data);
+    });
+
+    this.update = function () {
+      // grab all values and pass to worker
+      //this.inplots.each(function (
+      this.outplot.clear();
+      this.worker.postMessage({"test": 0});
+    };
+  }
+
+  var mainMediator = new Mediator();
+
+  $(".plot").each(function(i) {
+    var type = this.dataset.type;
+    var id = this.id;
+
+    if (type == "poisson") {
+      var newobj = new inputObject(this, id, mainMediator);
+    } else if (type == "gaussian") {
+      var newobj = new inputObject(this, id, mainMediator);
+    } else if (type == "output") {
+      var newobj = new outputObject(this, id);
     }
+    mainMediator.register(newobj);
   });
 });
